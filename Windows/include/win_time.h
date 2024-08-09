@@ -31,10 +31,12 @@ struct timezone
 	int  tz_dsttime;     // type of dst correction
 };
 
+#ifndef HAVE_STRUCT_TIMESPEC
 struct timespec {
 	time_t tv_sec;  // seconds
 	long tv_nsec;   //nanoseconds
 };
+#endif
 
 typedef enum
 {

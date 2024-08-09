@@ -71,6 +71,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
@@ -372,6 +373,7 @@ struct {                             // Internal state
     int   nfix_crc;                  // Number of crc bit error(s) to correct
     int   check_crc;                 // Only display messages with good CRC
     int   raw;                       // Raw output format
+    int   bsb;                       // Enable BSB output on the commandline (can be used with raw too)
     int   mode_ac;                   // Enable decoding of SSR Modes A & C
     int   debug;                     // Debugging mode
     int   net;                       // Enable networking

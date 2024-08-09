@@ -524,7 +524,9 @@ static void send_raw_heartbeat(struct net_service *service)
 // Write SBS output to TCP clients
 //
 static void modesSendSBSOutput(struct modesMessage *mm, struct aircraft *a) {
-    char *p;
+
+    char* p;
+
     struct timespec now;
     struct tm    stTime_receive, stTime_now;
     int          msgType;
@@ -534,9 +536,9 @@ static void modesSendSBSOutput(struct modesMessage *mm, struct aircraft *a) {
         return;
 
     p = prepareWrite(&Modes.sbs_out, 200);
-    if (!p)
-        return;
-
+    
+    if (!p )
+        return;   
     //
     // SBS BS style output checked against the following reference
     // http://www.homepages.mcb.net/bones/SBS/Article/Barebones42_Socket_Data.htm - seems comprehensive
@@ -711,7 +713,219 @@ static void modesSendSBSOutput(struct modesMessage *mm, struct aircraft *a) {
 
     p += sprintf(p, "\r\n");
 
-    completeWrite(&Modes.sbs_out, p);
+    if (Modes.bsb)
+        printf("%s", p);
+
+    if (Modes.net)
+        completeWrite(&Modes.sbs_out, p);
+}
+
+static void modesSendSBSToCommandLine(struct modesMessage* mm, struct aircraft* a) {
+    struct timespec now;
+    struct tm    stTime_receive, stTime_now;
+    int          msgType;
+
+    // For now, suppress non-ICAO addresses
+    if (mm->addr & MODES_NON_ICAO_ADDRESS)
+        return;
+
+
+    //
+    // SBS BS style output checked against the following reference
+    // http://www.homepages.mcb.net/bones/SBS/Article/Barebones42_Socket_Data.htm - seems comprehensive
+    //
+
+    // Decide on the basic SBS Message Type
+    switch (mm->msgtype) {
+    case 4:
+    case 20:
+        msgType = 5;
+        break;
+        break;
+
+    case 5:
+    case 21:
+        msgType = 6;
+        break;
+
+    case 0:
+    case 16:
+        msgType = 7;
+        break;
+
+    case 11:
+        msgType = 8;
+        break;
+
+    case 17:
+    case 18:
+        if (mm->metype >= 1 && mm->metype <= 4) {
+            msgType = 1;
+        }
+        else if (mm->metype >= 5 && mm->metype <= 8) {
+            msgType = 2;
+        }
+        else if (mm->metype >= 9 && mm->metype <= 18) {
+            msgType = 3;
+        }
+        else if (mm->metype == 19) {
+            msgType = 4;
+        }
+        else {
+            return;
+        }
+        break;
+
+    default:
+        return;
+    }
+
+    // Fields 1 to 6 : SBS message type and ICAO address of the aircraft and some other stuff
+    printf("MSG,%d,1,1,%06X,1,", msgType, mm->addr);
+
+    // Find current system time
+    clock_gettime(CLOCK_REALTIME, &now);
+    localtime_r(&now.tv_sec, &stTime_now);
+
+    // Find message reception time
+    localtime_r(&mm->sysTimestampMsg.tv_sec, &stTime_receive);
+
+    // Fields 7 & 8 are the message reception time and date
+    printf("%04d/%02d/%02d,", (stTime_receive.tm_year + 1900), (stTime_receive.tm_mon + 1), stTime_receive.tm_mday);
+    printf("%02d:%02d:%02d.%03u,", stTime_receive.tm_hour, stTime_receive.tm_min, stTime_receive.tm_sec, (unsigned)(mm->sysTimestampMsg.tv_nsec / 1000000U));
+
+    // Fields 9 & 10 are the current time and date
+    printf("%04d/%02d/%02d,", (stTime_now.tm_year + 1900), (stTime_now.tm_mon + 1), stTime_now.tm_mday);
+    printf("%02d:%02d:%02d.%03u", stTime_now.tm_hour, stTime_now.tm_min, stTime_now.tm_sec, (unsigned)(now.tv_nsec / 1000000U));
+
+    // Field 11 is the callsign (if we have it)
+    if (mm->callsign_valid) { printf(",%s", mm->callsign); }
+    else { printf(","); }
+
+    // Field 12 is the altitude (if we have it)
+    if (mm->altitude_valid) {
+        if (Modes.use_gnss) {
+            if (mm->altitude_source == ALTITUDE_GNSS) {
+                printf(",%dH", mm->altitude);
+            }
+            else if (trackDataValid(&a->gnss_delta_valid)) {
+                printf(",%dH", mm->altitude + a->gnss_delta);
+            }
+            else {
+                printf(",%d", mm->altitude);
+            }
+        }
+        else {
+            if (mm->altitude_source == ALTITUDE_BARO) {
+                printf(",%d", mm->altitude);
+            }
+            else if (trackDataValid(&a->gnss_delta_valid)) {
+                printf(",%d", mm->altitude - a->gnss_delta);
+            }
+            else {
+                printf(",");
+            }
+        }
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 13 is the ground Speed (if we have it)
+    if (mm->speed_valid && mm->speed_source == SPEED_GROUNDSPEED) {
+        printf(",%d", mm->speed);
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 14 is the ground Heading (if we have it)       
+    if (mm->heading_valid && mm->heading_source == HEADING_TRUE) {
+        printf(",%d", mm->heading);
+    }
+    else {
+        printf(",");
+    }
+
+    // Fields 15 and 16 are the Lat/Lon (if we have it)
+    if (mm->cpr_decoded) {
+        printf(",%1.5f,%1.5f", mm->decoded_lat, mm->decoded_lon);
+    }
+    else {
+        printf(",,");
+    }
+
+    // Field 17 is the VerticalRate (if we have it)
+    if (mm->vert_rate_valid) {
+        printf(",%d", mm->vert_rate);
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 18 is  the Squawk (if we have it)
+    if (mm->squawk_valid) {
+        printf(",%04x", mm->squawk);
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 19 is the Squawk Changing Alert flag (if we have it)
+    if (mm->alert_valid) {
+        if (mm->alert) {
+            printf(",-1");
+        }
+        else {
+            printf(",0");
+        }
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 20 is the Squawk Emergency flag (if we have it)
+    if (mm->squawk_valid) {
+        if ((mm->squawk == 0x7500) || (mm->squawk == 0x7600) || (mm->squawk == 0x7700)) {
+            printf(",-1");
+        }
+        else {
+            printf(",0");
+        }
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 21 is the Squawk Ident flag (if we have it)
+    if (mm->spi_valid) {
+        if (mm->spi) {
+            printf(",-1");
+        }
+        else {
+            printf(",0");
+        }
+    }
+    else {
+        printf(",");
+    }
+
+    // Field 22 is the OnTheGround flag (if we have it)
+    switch (mm->airground) {
+    case AG_GROUND:
+        printf(",-1");
+        break;
+    case AG_AIRBORNE:
+        printf(",0");
+        break;
+    default:
+        printf(",");
+        break;
+    }
+
+    printf("\r\n");
+
+
 }
 
 static void send_sbs_heartbeat(struct net_service *service)
@@ -753,6 +967,9 @@ void modesQueueOutput(struct modesMessage *mm, struct aircraft *a) {
         // Forward 2-bit-corrected messages via beast output only if --net-verbatim is set
         // Forward mlat messages via beast output only if --forward-mlat is set
         modesSendBeastOutput(mm);
+    }
+    if (Modes.bsb) {
+        modesSendSBSToCommandLine(mm,a);
     }
 
     if (!is_mlat) {

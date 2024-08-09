@@ -48,7 +48,7 @@
 //   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.h"
-
+#include "time.h"
 #include <stdlib.h>
 #ifndef _WIN32
 #include <sys/time.h>

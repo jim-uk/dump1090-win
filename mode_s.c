@@ -1519,17 +1519,20 @@ void displayModesMessage(struct modesMessage *mm) {
     }
 
     // Show the raw message.
-    if (Modes.mlat && mm->timestampMsg) {
-        printf("@%012" PRIX64, mm->timestampMsg);
-    } else
-        printf("*");
-
-    for (j = 0; j < mm->msgbits/8; j++) printf("%02x", mm->msg[j]);
-    printf(";\n");
-
     if (Modes.raw) {
+        if (Modes.mlat && mm->timestampMsg) {
+            printf("@%012" PRIX64, mm->timestampMsg);
+        }
+        else
+            printf("*");
+
+        for (j = 0; j < mm->msgbits / 8; j++) printf("%02x", mm->msg[j]);
+        printf(";\n");
+    }
+
+    if (Modes.raw || Modes.bsb) {
         fflush(stdout); // Provide data to the reader ASAP
-        return;         // Enough for --raw mode
+        return;         // Enough for --raw or --bsb mode mode
     }
 
     if (mm->msgtype < 32)
@@ -1810,7 +1813,7 @@ void useModesMessage(struct modesMessage *mm) {
     // Otherwise, apply a sanity-check filter and only
     // forward messages when we have seen two of them.
 
-    if (Modes.net) {
+    if (Modes.net || Modes.bsb) {
         if (Modes.net_verbatim || mm->msgtype == 32) {
             // Unconditionally send
             modesQueueOutput(mm, a);
@@ -1824,6 +1827,7 @@ void useModesMessage(struct modesMessage *mm) {
             modesQueueOutput(mm, a);
         }
     }
+
 }
 
 //

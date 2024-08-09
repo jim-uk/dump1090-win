@@ -1007,6 +1007,7 @@ void showHelp(void) {
 "--interactive-ttl <sec>  Remove from list if idle for <sec> (default: 60)\n"
 "--interactive-rtl1090    Display flight table in RTL1090 format\n"
 "--raw                    Show only messages hex values\n"
+"--bsb                    Show BSB Values\n"
 "--net                    Enable networking\n"
 "--modeac                 Enable decoding of SSR Modes 3/A & 3/C\n"
 "--net-bind-address <ip>  IP address to bind to (default: Any; Use 127.0.0.1 for private)\n"
@@ -1340,6 +1341,8 @@ int main(int argc, char **argv) {
             // Ignored, always enabled
         } else if (!strcmp(argv[j],"--raw")) {
             Modes.raw = 1;
+        }else if (!strcmp(argv[j], "--bsb")) {
+            Modes.bsb = 1;
         } else if (!strcmp(argv[j],"--net")) {
             Modes.net = 1;
         } else if (!strcmp(argv[j],"--modeac")) {

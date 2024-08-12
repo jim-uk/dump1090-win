@@ -1530,7 +1530,7 @@ void displayModesMessage(struct modesMessage *mm) {
         printf(";\n");
     }
 
-    if (Modes.raw || Modes.bsb) {
+    if (!Modes.displaydecode && (Modes.raw || Modes.bsb)) {
         fflush(stdout); // Provide data to the reader ASAP
         return;         // Enough for --raw or --bsb mode mode
     }

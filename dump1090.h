@@ -374,6 +374,7 @@ struct {                             // Internal state
     int   check_crc;                 // Only display messages with good CRC
     int   raw;                       // Raw output format
     int   bsb;                       // Enable BSB output on the commandline (can be used with raw too)
+    int   displaydecode;                    // Display decoded information to the comamndline
     int   mode_ac;                   // Enable decoding of SSR Modes A & C
     int   debug;                     // Debugging mode
     int   net;                       // Enable networking

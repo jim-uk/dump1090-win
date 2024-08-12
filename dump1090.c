@@ -1008,6 +1008,7 @@ void showHelp(void) {
 "--interactive-rtl1090    Display flight table in RTL1090 format\n"
 "--raw                    Show only messages hex values\n"
 "--bsb                    Show BSB Values\n"
+"--displaydecode          Show Decoded Information\n"
 "--net                    Enable networking\n"
 "--modeac                 Enable decoding of SSR Modes 3/A & 3/C\n"
 "--net-bind-address <ip>  IP address to bind to (default: Any; Use 127.0.0.1 for private)\n"
@@ -1343,6 +1344,8 @@ int main(int argc, char **argv) {
             Modes.raw = 1;
         }else if (!strcmp(argv[j], "--bsb")) {
             Modes.bsb = 1;
+        }else if (!strcmp(argv[j], "--displaydecode")) {
+            Modes.displaydecode = 1;
         } else if (!strcmp(argv[j],"--net")) {
             Modes.net = 1;
         } else if (!strcmp(argv[j],"--modeac")) {

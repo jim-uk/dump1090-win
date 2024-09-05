@@ -785,7 +785,7 @@ static void decodeESIdentAndCategory(struct modesMessage *mm)
     // all zeros. Catch that here.
     mm->callsign_valid = (strcmp(mm->callsign, "@@@@@@@@") != 0);
 
-    mm->category = ((0x0E - mm->metype) << 4) | mm->mesub;
+    mm->category = getbits(me, 1, 8);//((0x0E - mm->metype) << 4) | mm->mesub;
     mm->category_valid = 1;
 }
 

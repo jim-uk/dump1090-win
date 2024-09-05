@@ -922,6 +922,13 @@ static void modesSendSBSToCommandLine(struct modesMessage* mm, struct aircraft* 
         printf(",");
         break;
     }
+    if (mm->category_valid) {
+        printf(",%d",mm->category);
+    }
+    else {
+        printf(",");
+    }
+    //final category added to MSG is 
 
     printf("\r\n");
 

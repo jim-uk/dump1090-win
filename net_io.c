@@ -923,7 +923,7 @@ static void modesSendSBSToCommandLine(struct modesMessage* mm, struct aircraft* 
         break;
     }
     if (mm->category_valid) {
-        printf(",%d",mm->category);
+        printf(",%02X",mm->category);
     }
     else {
         printf(",");

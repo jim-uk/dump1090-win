@@ -786,7 +786,7 @@ static void decodeESIdentAndCategory(struct modesMessage *mm)
     mm->callsign_valid = (strcmp(mm->callsign, "@@@@@@@@") != 0);
 
     mm->category = ((0x0E - mm->metype) << 4) | mm->mesub;
-    //mm->category_valid = 1;
+    mm->category_valid = 1;
 }
 
 // Handle setting a non-ICAO address

@@ -444,6 +444,7 @@ int decodeModesMessage(struct modesMessage *mm, unsigned char *msg)
     mm->crc             = modesChecksum(msg, mm->msgbits);
     mm->correctedbits   = 0;
     mm->addr            = 0;
+    mm->category_valid  = 0;
 
     // Do checksum work and set fields that depend on the CRC
     switch (mm->msgtype) {
@@ -785,7 +786,7 @@ static void decodeESIdentAndCategory(struct modesMessage *mm)
     // all zeros. Catch that here.
     mm->callsign_valid = (strcmp(mm->callsign, "@@@@@@@@") != 0);
 
-    mm->category = getbits(me, 1, 8);//((0x0E - mm->metype) << 4) | mm->mesub;
+    mm->category = ((0x0E - mm->metype) << 4) | mm->mesub; //getbits(me, 1, 8);//
     mm->category_valid = 1;
 }
 

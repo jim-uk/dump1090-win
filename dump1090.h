@@ -52,7 +52,7 @@
 
 // Default version number, if not overriden by the Makefile
 #ifndef MODES_DUMP1090_VERSION
-# define MODES_DUMP1090_VERSION     "v1.13-custom"
+# define MODES_DUMP1090_VERSION     "v1.x-my-custom"
 #endif
 
 #ifndef MODES_DUMP1090_VARIANT

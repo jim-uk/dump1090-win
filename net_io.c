@@ -922,8 +922,10 @@ static void modesSendSBSToCommandLine(struct modesMessage* mm, struct aircraft* 
         printf(",");
         break;
     }
+
+    //Field 23 - category flag, if available
     if (mm->category_valid) {
-        printf(",%d",mm->category);
+        printf(",%02X",mm->category);
     }
     else {
         printf(",");

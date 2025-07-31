@@ -444,7 +444,7 @@ int decodeModesMessage(struct modesMessage *mm, unsigned char *msg)
     mm->crc             = modesChecksum(msg, mm->msgbits);
     mm->correctedbits   = 0;
     mm->addr            = 0;
-    mm->category_valid  = 0;
+    mm->category_valid  = 0; //added by JT
 
     // Do checksum work and set fields that depend on the CRC
     switch (mm->msgtype) {
